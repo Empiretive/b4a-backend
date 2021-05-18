@@ -1,5 +1,6 @@
-import app from "./app";
 import chalk from "chalk";
+import "./connection";
+import app from "./app";
 
 app.listen(app.get("port"), () => {
   console.log(
