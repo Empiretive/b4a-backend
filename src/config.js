@@ -6,7 +6,11 @@ dotenv.config({
 });
 
 const config = {
-  APP: { PORT: process.env.PORT || 5050 },
+  APP: {
+    HOST: process.env.HOST || "http://localhost",
+    PORT: process.env.PORT || 5050,
+    API_VERSION: process.env.API_VERSION || 1,
+  },
   DB: {
     URL: process.env.DB_URL ? process.env.DB_URL : null,
     PROTOCOL: process.env.DB_PROTOCOL,
