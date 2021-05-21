@@ -18,12 +18,24 @@ const userSchema = new Schema(
     email: {
       type: String,
     },
+    status: {
+      type: Number,
+    },
     role: {
       ref: "Role",
       type: Schema.Types.ObjectId,
     },
     photo: {
-      type: Schema.Types.Buffer,
+      type: String,
+    },
+    password: {
+      type: String,
+    },
+    token: {
+      type: String,
+    },
+    deletedAt: {
+      type: Date,
     },
   },
   {
@@ -31,3 +43,4 @@ const userSchema = new Schema(
     timestamps: true,
   }
 );
+export default model("User", userSchema);

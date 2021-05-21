@@ -2,7 +2,7 @@ import Role from "../model/role.model";
 
 // Get all roles
 export const getRoles = async () => {
-  const roles = await Role.find();
+  const roles = await Role.find().sort("level");
   return roles;
 };
 
@@ -16,7 +16,7 @@ export const setRole = async ({ level, name }) => {
   return roleSaved;
 };
 
-// Update rolename
+// Update role name
 export const updateRole = async ({ level, name }) => {
   const roleUpdated = await Role.findOneAndUpdate(
     {
