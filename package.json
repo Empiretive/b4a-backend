@@ -6,14 +6,14 @@
   "scripts": {
     "start": "set NODE_ENV=production&& node dist/main.js",
     "start:dev": "SET NODE_ENV=development&& nodemon src/main.js --exec babel-node",
-    "prod": "babel src --out-dir dist",
+    "prod": "babel src --out-dir dist && npm run copy-mailTemplate",
+    "copy-mailTemplate": "ncp ./src/utils/mail/templates/ ./dist/utils/mail/templates/",
     "start:prod": "npm run prod && npm run start"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "babel-plugin-handlebars-inline-precompile": "^2.1.1",
     "bcryptjs": "^2.4.3",
     "chalk": "^4.1.1",
     "cors": "^2.8.5",
@@ -26,6 +26,7 @@
     "moment": "^2.29.1",
     "mongoose": "^5.12.9",
     "morgan": "^1.10.0",
+    "ncp": "^2.0.0",
     "nodemailer": "^6.6.0",
     "uuid": "^8.3.2"
   },
@@ -34,6 +35,7 @@
     "@babel/core": "^7.14.2",
     "@babel/node": "^7.14.2",
     "@babel/plugin-transform-runtime": "^7.14.3",
+    "babel-plugin-handlebars-inline-precompile": "^2.1.1",
     "@babel/polyfill": "^7.12.1",
     "@babel/preset-env": "^7.14.2",
     "nodemon": "^2.0.7"

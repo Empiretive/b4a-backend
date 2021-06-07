@@ -2,6 +2,11 @@ import { Router } from "express";
 import RoleController from "./api/role/role.controller";
 import UserController from "./api/user/user.controller";
 import StateController from "./api/states/state.controller";
+import SettingController from "./api/setting/setting.controller";
+import AuthController from "./api/auth/auth.controller";
+import { checkRole, JWTAuth } from "./common/middleware/auth.middleware";
+import { Roles } from "./common/Roles";
+import { InitialSetup } from "./api/InitialSetup";
 const router = Router();
 
 // Main Routes
@@ -10,11 +15,19 @@ router.get("", (req, res) => {
 });
 
 // Roles Routes
-router.use("/role", RoleController);
+router.use("/roles", JWTAuth, RoleController);
 
 // User routes
-router.use("/user", UserController);
+router.use("/users", JWTAuth, UserController);
 
 // State routes
-router.use("/state", StateController);
+router.use("/states", JWTAuth, StateController);
+
+// Settings Routes
+router.use("/settings", [JWTAuth, checkRole(Roles.admin)], SettingController);
+
+// Auth Routes
+router.use("/auth", AuthController);
+
+router.get("/initial", InitialSetup);
 export default router;

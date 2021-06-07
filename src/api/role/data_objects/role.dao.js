@@ -1,5 +1,11 @@
 import Role from "../model/role.model";
 
+// Get One role
+export const getRole = async (query) => {
+  const role = await Role.findOne(query);
+  return role;
+};
+
 // Get all roles
 export const getRoles = async () => {
   const roles = await Role.find().sort("level");

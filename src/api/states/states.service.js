@@ -16,6 +16,5 @@ export const createUserStates = async (req, res) => {
       },
     ],
   });
-  console.log(userStates);
   res.json(userStates);
 };

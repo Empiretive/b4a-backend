@@ -9,6 +9,16 @@ export const generateToken = async (payload) => {
 };
 
 export const getPayload = (token) => {
-  const payload = jwt.verify(token, config.JWT.SECRET);
+  const payload = jwt.verify(token, config.JWT.SECRET, (err, payload) => {
+    if (err) {
+      console.log(err);
+      return { err };
+    } else {
+      return payload;
+    }
+  });
+  if (payload.err) {
+    return { error: "Token Error" };
+  }
   return payload;
 };

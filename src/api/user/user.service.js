@@ -7,15 +7,22 @@ import { isEmpty } from "lodash";
 import { Response } from "../../common/response";
 import * as jwt from "../../utils/jwt";
 import { UserState } from "../../common/States";
+import { AllUserFormat, userFormater } from "./data_objects/user.formater";
 // Register user BACKOFFICE
 export const registerUser = async (req, res) => {
   try {
     // Verify user dont exist
     const userFound = await UserDao.findUser({
       dni: req.body.dni,
+      deletedAt: null,
+      status: UserState.active,
     });
-
-    if (isEmpty(userFound)) {
+    const userFoundbyEmail = await UserDao.findUser({
+      email: req.body.email,
+      deletedAt: null,
+      status: UserState.active,
+    });
+    if (isEmpty(userFound) && isEmpty(userFoundbyEmail)) {
       const { dni, name, lastName, phone, email, role, photo } = req.body;
       let password = passwordGenerator.generate({
         length: 10,
@@ -38,14 +45,17 @@ export const registerUser = async (req, res) => {
       user.password = await encrypt.encryptPassword(password); //Encrypt Password
       user.status = UserState.active;
       const userSaved = await UserDao.registerUser(user); //Saved user on BD
-      const token = await jwt.generateToken({
-        user: {
-          _id: userSaved._id,
-          name: userSaved.name,
-          lastName: userSaved.lastName,
-          role: userSaved.role,
-        },
-      });
+      const token = null;
+
+      // Generate Token on register?
+      // await jwt.generateToken({
+      //   user: {
+      //     _id: userSaved._id,
+      //     name: userSaved.name,
+      //     lastName: userSaved.lastName,
+      //     role: userSaved.role,
+      //   },
+      // });
       const userResponse = await UserDao.savedToken(userSaved._id, token);
 
       res
@@ -60,12 +70,12 @@ export const registerUser = async (req, res) => {
         .status(!isEmpty(userResponse) ? 201 : 403);
     } else {
       res
-        .json(Response(null, null, "USER.REGISTER.ERROR.USER_EXIST"))
+        .json(Response(null, null, "USER.REGISTER.ERROR.USER_EXIST", false))
         .status(400);
     }
   } catch (error) {
     res
-      .json(Response(null, null, "USER.REGISTER.ERROR.BAD_REQUEST"))
+      .json(Response(null, null, "USER.REGISTER.ERROR.BAD_REQUEST", false))
       .status(400);
   }
 };
@@ -73,17 +83,18 @@ export const registerUser = async (req, res) => {
 // List users
 export const getUsers = async (req, res) => {
   try {
-    const listUsers = await UserDao.findAllUsers();
+    const listUsers = await UserDao.findAllUsers({ deletedAt: null });
+    const userListFormat = await AllUserFormat(listUsers, req.user.role.level);
     res
       .json(
         Response(
-          listUsers,
+          userListFormat,
           "USER.FIND.SUCCESS",
           "USER.FIND.ERROR.NOT_FOUND",
-          !isEmpty(listUsers)
+          !isEmpty(userListFormat)
         )
       )
-      .status(!isEmpty(listUsers) ? 200 : 404);
+      .status(!isEmpty(userListFormat) ? 200 : 404);
   } catch (error) {
     res.json(Response(null, null, "USER.LIST.ERROR.BAD_REQUEST")).status(400);
   }
@@ -120,17 +131,19 @@ export const getOneUser = async (req, res) => {
   try {
     const userFound = await UserDao.findUser({
       _id: req.params.id,
+      deletedAt: null,
     });
+    const userFormated = await userFormater(userFound);
     res
       .json(
         Response(
-          userFound,
+          userFormated,
           "USER.FIND.SUCCESS",
           "USER.FIND.ERROR.NOT_FOUND",
-          !isEmpty(userFound)
+          !isEmpty(userFormated)
         )
       )
-      .status(!isEmpty(userFound) ? 200 : 404);
+      .status(!isEmpty(userFormated) ? 200 : 404);
   } catch (error) {
     res.json(Response(null, null, "USER.FIND.ERROR.BAD_REQUEST")).status(400);
   }
