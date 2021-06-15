@@ -5,5 +5,6 @@ const router = Router();
 
 router.post("/signin", authService.signIn);
 router.post("/logout", [JWTAuth], authService.logout);
+router.post("/user/token", authService.getUserByToken);
 
 export default router;

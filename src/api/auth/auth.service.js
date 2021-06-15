@@ -3,7 +3,7 @@ import { Response } from "../../common/response";
 import { generateToken, getPayload } from "../../utils/jwt";
 import { comparePassword } from "../../utils/passwordCrypt";
 import * as UserDao from "../user/data_objects/user.dao";
-
+import { userFormater } from "../user/data_objects/user.formater";
 export const signIn = async (req, res) => {
   try {
     let userFound = await UserDao.findUser({
@@ -58,19 +58,31 @@ export const signIn = async (req, res) => {
       });
     }
     const user = await UserDao.savedToken(userFound._id, token);
-
+    let userFormat;
+    if (!isEmpty(user)) {
+      userFormat = {
+        dni: user.dni,
+        name: user.name,
+        lastName: user.lastName,
+        role: user.role,
+        image: user.photo,
+        token: user.token,
+      };
+    }
     res
       .json(
         Response(
-          { user: user },
-          "User Authenticated",
-          "User Cant Authenticated",
-          true
+          { user: userFormat },
+          "USER.AUTH.SUCCESS",
+          "USER.AUTH.ERROR",
+          !isEmpty(userFormat)
         )
       )
-      .status(200);
+      .status(!isEmpty(userFormat) ? 200 : 401);
   } catch (error) {
-    res.json(Response(error, null, "Login Error", false)).status(400);
+    res
+      .json(Response(error, null, "USER.AUTH.ERROR.BAD_REQUEST", false))
+      .status(400);
   }
 };
 
@@ -90,7 +102,49 @@ export const logout = async (req, res) => {
   }
 };
 
-export const profile = (req, res) => {
+export const getUserByToken = async (req, res) => {
   try {
-  } catch (error) {}
+    const user = await UserDao.findUser({
+      token: req.body.token,
+    });
+    if (isEmpty(user)) {
+      res
+        .json(Response(null, null, "USER.FIND.ERROR.NOT_FOUND", false))
+        .status(400);
+    }
+    const payload = await getPayload(user.token);
+    if (!isEmpty(payload.error)) {
+      await userDao.savedToken(user._id, null);
+      res
+        .json(Response(null, null, "USER.FIND.TOKEN_EXPIRED", false))
+        .status(400);
+    }
+    const userFormat = await userFormater(user);
+    res
+      .json(
+        Response(
+          userFormat,
+          "USER.FIND.SUCCESS",
+          "USER.FIND.ERROR.NOT_FOUND",
+          !isEmpty(userFormat)
+        )
+      )
+      .status(200);
+  } catch (error) {
+    res
+      .json(
+        Response(
+          null,
+          "USER.FIND.SUCCESS",
+          "USER.FIND.ERROR.BAD_REQUEST",
+          false
+        )
+      )
+      .status(400);
+  }
 };
+
+// export const profile = (req, res) => {
+//   try {
+//   } catch (error) {}
+// };
