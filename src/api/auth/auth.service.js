@@ -60,15 +60,9 @@ export const signIn = async (req, res) => {
     const user = await UserDao.savedToken(userFound._id, token);
     let userFormat;
     if (!isEmpty(user)) {
-      userFormat = {
-        dni: user.dni,
-        name: user.name,
-        lastName: user.lastName,
-        role: user.role,
-        image: user.photo,
-        token: user.token,
-      };
+      userFormat = await userFormater(user);
     }
+    userFormat.token = token;
     res
       .json(
         Response(
@@ -104,6 +98,12 @@ export const logout = async (req, res) => {
 
 export const getUserByToken = async (req, res) => {
   try {
+    if (isEmpty(req.body.token)) {
+      res
+        .json(Response(null, null, "USER.FIND.ERROR.TOKEN_NOT_PROVIDED", false))
+        .status(400);
+      return 0;
+    }
     const user = await UserDao.findUser({
       token: req.body.token,
     });
@@ -111,6 +111,7 @@ export const getUserByToken = async (req, res) => {
       res
         .json(Response(null, null, "USER.FIND.ERROR.NOT_FOUND", false))
         .status(400);
+      return 0;
     }
     const payload = await getPayload(user.token);
     if (!isEmpty(payload.error)) {
@@ -118,6 +119,7 @@ export const getUserByToken = async (req, res) => {
       res
         .json(Response(null, null, "USER.FIND.TOKEN_EXPIRED", false))
         .status(400);
+      return 0;
     }
     const userFormat = await userFormater(user);
     res
@@ -125,7 +127,7 @@ export const getUserByToken = async (req, res) => {
         Response(
           userFormat,
           "USER.FIND.SUCCESS",
-          "USER.FIND.ERROR.NOT_FOUND",
+          "USER.FIND.ERROR.NOT_VALID",
           !isEmpty(userFormat)
         )
       )
