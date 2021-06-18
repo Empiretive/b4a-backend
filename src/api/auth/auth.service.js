@@ -14,10 +14,9 @@ export const signIn = async (req, res) => {
         email: req.body.userPass,
       });
       if (isEmpty(userFound)) {
-        res
+        return res
           .json(Response(null, null, "USER.AUTH.ERROR.USER_NOT_EXISTS", false))
           .status(401);
-        return 0;
       }
     }
 
@@ -27,10 +26,9 @@ export const signIn = async (req, res) => {
     );
 
     if (!compare) {
-      res
+      return res
         .json(Response(null, null, "USER.AUTH.ERROR.BAD_PASSWORD", false))
         .status(401);
-      return 0;
     }
     let token;
     if (!isEmpty(userFound.token)) {
@@ -63,7 +61,7 @@ export const signIn = async (req, res) => {
       userFormat = await userFormater(user);
     }
     userFormat.token = token;
-    res
+    return res
       .json(
         Response(
           { user: userFormat },
@@ -74,7 +72,7 @@ export const signIn = async (req, res) => {
       )
       .status(!isEmpty(userFormat) ? 200 : 401);
   } catch (error) {
-    res
+    return res
       .json(Response(error, null, "USER.AUTH.ERROR.BAD_REQUEST", false))
       .status(400);
   }
@@ -86,59 +84,65 @@ export const logout = async (req, res) => {
       _id: req.user._id,
     });
     const userLogout = await UserDao.savedToken(user._id, null);
-    res
+    return res
       .json(
-        Response(null, "Logout success", "Logout error", !isEmpty(userLogout))
+        Response(
+          null,
+          "USER.AUTH.SUCCESS.LOGOUT",
+          "USER.AUTH.ERROR.LOGOUT",
+          !isEmpty(userLogout)
+        )
       )
       .status(200);
   } catch (error) {
-    res.json(Response(error, null, "Logout error", false)).status(200);
+    return res
+      .json(Response(error, null, "USER.AUTH.ERROR.LOGOUT", false))
+      .status(200);
   }
 };
 
 export const getUserByToken = async (req, res) => {
   try {
     if (isEmpty(req.body.token)) {
-      res
-        .json(Response(null, null, "USER.FIND.ERROR.TOKEN_NOT_PROVIDED", false))
+      return res
+        .json(Response(null, null, "USER.AUTH.ERROR.TOKEN_NOT_PROVIDED", false))
         .status(400);
-      return 0;
     }
     const user = await UserDao.findUser({
       token: req.body.token,
     });
     if (isEmpty(user)) {
-      res
-        .json(Response(null, null, "USER.FIND.ERROR.NOT_FOUND", false))
+      return res
+        .json(Response(null, null, "USER.AUTH.ERROR.NOT_FOUND", false))
         .status(400);
-      return 0;
     }
+    let userFormat = await userFormater(user);
+
     const payload = await getPayload(user.token);
     if (!isEmpty(payload.error)) {
       await userDao.savedToken(user._id, null);
-      res
-        .json(Response(null, null, "USER.FIND.TOKEN_EXPIRED", false))
+      return res
+        .json(Response(null, null, "USER.AUTH.ERROR.TOKEN_EXPIRED", false))
         .status(400);
-      return 0;
     }
-    const userFormat = await userFormater(user);
-    res
+    userFormat.token = user.token;
+    return res
       .json(
         Response(
           userFormat,
-          "USER.FIND.SUCCESS",
-          "USER.FIND.ERROR.NOT_VALID",
+          "USER.AUTH.SUCCESS",
+          "USER.AUTH.ERROR.NOT_VALID",
           !isEmpty(userFormat)
         )
       )
       .status(200);
   } catch (error) {
-    res
+    return res
       .json(
         Response(
-          null,
-          "USER.FIND.SUCCESS",
-          "USER.FIND.ERROR.BAD_REQUEST",
+          error,
+          "USER.AUTH.SUCCESS",
+          "USER.AUTH.ERROR.BAD_REQUEST",
           false
         )
       )
@@ -146,7 +150,25 @@ export const getUserByToken = async (req, res) => {
   }
 };
 
-// export const profile = (req, res) => {
-//   try {
-//   } catch (error) {}
-// };
+export const profile = async (req, res) => {
+  try {
+    const user = await UserDao.findUser({
+      _id: req.user._id,
+    });
+    const userFormat = await userFormater(user);
+    return res
+      .json(
+        Response(
+          userFormat,
+          "USER.AUTH.PROFILE.SUCCESS",
+          "USER.AUTH.PROFILE.ERROR.NOT_FOUND",
+          !isEmpty(userFormat)
+        )
+      )
+      .status(400);
+  } catch (error) {
+    return res
+      .json(Response(error, null, "USER.AUTH.PROFILE.ERROR.BAD_REQUEST", false))
+      .status(400);
+  }
+};

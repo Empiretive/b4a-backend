@@ -8,7 +8,7 @@ export const checkRole = (role) => {
       next();
       return 0;
     }
-    res.json("You dont have permission to access to this route").status(401);
+    res.json("USER.PERMISSIONS.ERROR").status(401);
   };
 };
 
@@ -16,13 +16,17 @@ export const JWTAuth = async (req, res, next) => {
   const bearer = req.headers.authorization;
 
   if (isEmpty(bearer)) {
-    res.json({ message: "No token provided", success: false }).status(401);
+    res
+      .json({ message: "USER.AUTH.ERROR.TOKEN_NOT_PROVIDED", success: false })
+      .status(401);
     return 0;
   }
   const token = bearer.split(" ");
   const payload = getPayload(token[1]);
   if (!isEmpty(payload.error)) {
-    res.json({ message: "Token invalid", success: false }).status(401);
+    res
+      .json({ message: "USER.AUTH.ERROR.TOKEN_INVALID", success: false })
+      .status(401);
     return 0;
   }
   const user = await UserDao.findUser({
@@ -32,7 +36,9 @@ export const JWTAuth = async (req, res, next) => {
     status: UserState.active,
   });
   if (isEmpty(user)) {
-    res.json({ message: "Token Expired", success: false }).status(401);
+    res
+      .json({ message: "USER.AUTH.ERROR.TOKEN_EXPIRED", success: false })
+      .status(401);
     return 0;
   }
   req.user = payload.user;
