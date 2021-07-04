@@ -8,10 +8,14 @@ const createTransport = () => {
   const transport = nodemailer.createTransport({
     host: config.MAIL.HOST,
     port: config.MAIL.PORT,
+    secure: config.MAIL.SECURE,
     auth: {
       user: config.MAIL.USER,
       pass: config.MAIL.PASS,
     },
+  });
+  transport.verify().then((res) => {
+    console.log("Ready to Send Mails");
   });
   return transport;
 };
@@ -47,6 +51,7 @@ export const sendMailRegister = (toEmail, { name, lastName, password }) => {
     name,
     lastName,
     password,
+    link: config.APP.LINK,
   });
   fs.writeFileSync("index.html", template);
   const subject = `Hola ${name}, Bienvenido a la comunidad Empiretive`;

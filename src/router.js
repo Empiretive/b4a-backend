@@ -4,6 +4,8 @@ import UserController from "./api/user/user.controller";
 import StateController from "./api/states/state.controller";
 import SettingController from "./api/setting/setting.controller";
 import AuthController from "./api/auth/auth.controller";
+import CategoryController from "./api/category/category.controller";
+
 import { checkRole, JWTAuth } from "./common/middleware/auth.middleware";
 import { Roles } from "./common/Roles";
 import { InitialSetup } from "./api/InitialSetup";
@@ -28,6 +30,8 @@ router.use("/settings", [JWTAuth, checkRole(Roles.admin)], SettingController);
 
 // Auth Routes
 router.use("/auth", AuthController);
+// Category Routed
+router.use("/categories", CategoryController);
 
 router.get("/initial", InitialSetup);
 export default router;

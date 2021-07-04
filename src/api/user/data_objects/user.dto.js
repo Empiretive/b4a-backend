@@ -1,6 +1,6 @@
 import { isEmpty, isString } from "lodash";
 import { emailRegExp, phoneRegExp } from "../../../utils/regExps";
-export const userDto = ({ dni, name, lastName, phone, email, role, photo }) => {
+export const userDto = ({ dni, name, lastName, email, role, photo }) => {
   let error = [];
 
   if (isEmpty(dni) || !isString(dni) || dni.length > 9 || dni.length < 7) {
@@ -12,9 +12,6 @@ export const userDto = ({ dni, name, lastName, phone, email, role, photo }) => {
   if (isEmpty(lastName) || !isString(lastName)) {
     error.push("USER.REGISTER.ERROR.LAST_NAME");
   }
-  if (isEmpty(phone) || !phoneRegExp.test(phone)) {
-    error.push("USER.REGISTER.ERROR.PHONE");
-  }
 
   if (isEmpty(email) || !emailRegExp.test(email)) {
     error.push("USER.REGISTER.ERROR.EMAIL");
@@ -23,6 +20,6 @@ export const userDto = ({ dni, name, lastName, phone, email, role, photo }) => {
   if (error.length > 0) {
     return { error };
   } else {
-    return { dni, name, lastName, phone, email, role, photo };
+    return { dni, name, lastName, email, role, photo };
   }
 };

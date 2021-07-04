@@ -9,6 +9,7 @@ const settingSchema = new Schema(
       type: String,
     },
     value: {},
+    deletedAt: Date,
   },
   {
     versionKey: false,

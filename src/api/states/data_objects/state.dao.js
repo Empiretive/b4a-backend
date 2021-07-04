@@ -8,7 +8,12 @@ export const getState = async (entity, value) => {
   });
   return state;
 };
-
+export const getStates = async (entity) => {
+  const states = await State.find({
+    entity: entity,
+  });
+  return states;
+};
 export const createState = async ({ entity, states }) => {
   const stateRepeat = await State.find({
     entity: entity,
@@ -28,7 +33,6 @@ export const createState = async ({ entity, states }) => {
         value: state.value,
         name: state.name,
       });
-      console.log(newState);
       await newState.save();
       statesCreated.push(newState);
     }

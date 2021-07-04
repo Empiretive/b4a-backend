@@ -24,26 +24,29 @@ export const registerUser = async (req, res) => {
     });
     if (isEmpty(userFound) && isEmpty(userFoundbyEmail)) {
       const { dni, name, lastName, phone, email, role, photo } = req.body;
-      let password = passwordGenerator.generate({
-        length: 10,
-        numbers: true,
-      }); //Generate a dinamic password to a new user
+      const password = !isEmpty(req.body.password)
+        ? req.body.password
+        : passwordGenerator.generate({
+            length: 10,
+            numbers: true,
+          }); //Generate a dinamic password to a new user
 
       // The dto validate the properties
       const user = userDto({
         dni,
         name,
         lastName,
-        phone,
         email,
         role,
         photo,
       });
       // Send a mail with the password generate
-      await sendMailRegister(user.email, { name, password });
+      await sendMailRegister(user.email, { name, lastName, password });
 
       user.password = await encrypt.encryptPassword(password); //Encrypt Password
       user.status = UserState.active;
+      user.email = user.email.toLowerCase();
+      user.phone = phone;
       const userSaved = await UserDao.registerUser(user); //Saved user on BD
       const token = null;
 
@@ -58,7 +61,7 @@ export const registerUser = async (req, res) => {
       // });
       const userResponse = await UserDao.savedToken(userSaved._id, token);
 
-      res
+      return res
         .json(
           Response(
             userResponse,
@@ -69,13 +72,13 @@ export const registerUser = async (req, res) => {
         )
         .status(!isEmpty(userResponse) ? 201 : 403);
     } else {
-      res
+      return res
         .json(Response(null, null, "USER.REGISTER.ERROR.USER_EXIST", false))
         .status(400);
     }
   } catch (error) {
     res
-      .json(Response(null, null, "USER.REGISTER.ERROR.BAD_REQUEST", false))
+      .json(Response(error, null, "USER.REGISTER.ERROR.BAD_REQUEST", false))
       .status(400);
   }
 };
@@ -85,7 +88,7 @@ export const getUsers = async (req, res) => {
   try {
     const listUsers = await UserDao.findAllUsers({ deletedAt: null });
     const userListFormat = await AllUserFormat(listUsers, req.user.role.level);
-    res
+    return res
       .json(
         Response(
           userListFormat,
@@ -96,21 +99,26 @@ export const getUsers = async (req, res) => {
       )
       .status(!isEmpty(userListFormat) ? 200 : 404);
   } catch (error) {
-    res.json(Response(null, null, "USER.LIST.ERROR.BAD_REQUEST")).status(400);
+    res.json(Response(error, null, "USER.LIST.ERROR.BAD_REQUEST")).status(400);
   }
 };
 
 // Update User
 export const updateUserById = async (req, res) => {
   try {
-    const user = userDto(req.body);
+    const { dni, name, lastName, phone, email, role, photo, status } = req.body;
+
+    const user = userDto({ dni, name, lastName, email, role, photo });
+    user.phone = phone;
+    user.status = status;
+    user.token = null;
     const updateUser = await UserDao.updateUser(
       {
         _id: req.params.id,
       },
       user
     );
-    res
+    return res
       .json(
         Response(
           updateUser,
@@ -121,7 +129,9 @@ export const updateUserById = async (req, res) => {
       )
       .status(!isEmpty(updateUser) ? 200 : 400);
   } catch (error) {
-    res.json(Response(null, null, "USER.UPDATE.ERROR.BAD_REQUEST")).status(400);
+    res
+      .json(Response(error, null, "USER.UPDATE.ERROR.BAD_REQUEST"))
+      .status(400);
   }
 };
 
@@ -134,7 +144,7 @@ export const getOneUser = async (req, res) => {
       deletedAt: null,
     });
     const userFormated = await userFormater(userFound);
-    res
+    return res
       .json(
         Response(
           userFormated,
@@ -145,6 +155,58 @@ export const getOneUser = async (req, res) => {
       )
       .status(!isEmpty(userFormated) ? 200 : 404);
   } catch (error) {
-    res.json(Response(null, null, "USER.FIND.ERROR.BAD_REQUEST")).status(400);
+    res.json(Response(error, null, "USER.FIND.ERROR.BAD_REQUEST")).status(400);
+  }
+};
+
+// Delete user
+
+export const deleteUser = async (req, res) => {
+  try {
+    const userDeleted = await UserDao.activatedUser(req.params.id, "DELETE");
+    if (isEmpty(userDeleted)) {
+      res
+        .json(Response(null, null, "USER.DELETED.ERROR.CANT_BE_DELETED"))
+        .status(400);
+    }
+    return res
+      .json(
+        Response(
+          userDeleted,
+          "USER.DELETED.SUCCESS",
+          "USER.DELETED.ERROR.NOT_FOUND",
+          !isEmpty(userDeleted)
+        )
+      )
+      .status(!isEmpty(userDeleted) ? 200 : 404);
+  } catch (error) {
+    res
+      .json(Response(error, null, "USER.DELETED.ERROR.BAD_REQUEST"))
+      .status(400);
+  }
+};
+
+export const toggleEnableUser = async (req, res) => {
+  try {
+    const userEnable = await UserDao.activatedUser(req.params.id, "TOGGLE");
+    if (isEmpty(userEnable)) {
+      res
+        .json(Response(null, null, "USER.TOGGLE.ERROR.CANT_BE_CANT_BE_ENABLE"))
+        .status(400);
+    }
+    return res
+      .json(
+        Response(
+          userEnable,
+          "USER.ENABLE.SUCCESS",
+          "USER.ENABLE.ERROR.NOT_FOUND",
+          !isEmpty(userEnable)
+        )
+      )
+      .status(!isEmpty(userEnable) ? 200 : 404);
+  } catch (error) {
+    res
+      .json(Response(error, null, "USER.ENABLE.ERROR.BAD_REQUEST"))
+      .status(400);
   }
 };

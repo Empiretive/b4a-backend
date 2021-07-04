@@ -1,5 +1,6 @@
 import { isEmpty } from "lodash";
 import { Response } from "../../common/response";
+import { UserState } from "../../common/States";
 import { generateToken, getPayload } from "../../utils/jwt";
 import { comparePassword } from "../../utils/passwordCrypt";
 import * as UserDao from "../user/data_objects/user.dao";
@@ -8,10 +9,14 @@ export const signIn = async (req, res) => {
   try {
     let userFound = await UserDao.findUser({
       dni: req.body.userPass,
+      deletedAt: null,
+      status: UserState.active,
     });
     if (isEmpty(userFound) || userFound == null) {
       userFound = await UserDao.findUser({
-        email: req.body.userPass,
+        email: req.body.userPass.toLowerCase(),
+        deletedAt: null,
+        status: UserState.active,
       });
       if (isEmpty(userFound)) {
         return res

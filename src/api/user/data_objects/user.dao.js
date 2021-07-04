@@ -1,6 +1,7 @@
 import User from "../models/user.model";
 import Role from "../../role/model/role.model";
 import { isEmpty } from "lodash";
+import { UserState } from "../../../common/States";
 
 // Find one User some time, by a query or not
 export const findUser = async (query) => {
@@ -41,7 +42,6 @@ export const updateUser = async (query, user) => {
     role._id = userFound.role;
   }
   user.role = role._id;
-  console.log(user);
   const userUpdated = await User.findByIdAndUpdate(userFound._id, user, {
     new: true,
   });
@@ -57,4 +57,28 @@ export const savedToken = async (user_id, token) => {
     }
   );
   return userSaved;
+};
+
+export const activatedUser = async (id, action) => {
+  let user;
+  if (action == "DELETE") {
+    user = await User.findByIdAndUpdate(
+      id,
+      { deletedAt: new Date() },
+      {
+        new: true,
+      }
+    );
+  } else if (action == "TOGGLE") {
+    const userFound = await User.findById(id);
+    if (!isEmpty(userFound)) {
+      const state =
+        userFound.status == UserState.active
+          ? UserState.disable
+          : UserState.active;
+      userFound.status = state;
+      user = userFound.save();
+    }
+  }
+  return user;
 };
