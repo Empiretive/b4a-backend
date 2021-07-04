@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start:stg": "babel src --out-dir dist && npm run copy-mailTemplate && set NODE_ENV=stg&& node dist/main.js",
     "start": "set NODE_ENV=production&& node dist/main.js",
     "start:dev": "SET NODE_ENV=development&& nodemon src/main.js --exec babel-node",
     "prod": "babel src --out-dir dist && npm run copy-mailTemplate",

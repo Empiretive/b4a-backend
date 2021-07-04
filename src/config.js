@@ -18,7 +18,7 @@ const config = {
     LINK: process.env.APP_LINK || "http://localhost:4200",
   },
   DB: {
-    URL: process.env.DB_URL ? process.env.DB_URL : null,
+    URL: process.env.DB_URL,
     PROTOCOL: process.env.DB_PROTOCOL,
     NAME: process.env.DB_NAME,
     USER: process.env.DB_USER,
