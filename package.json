@@ -9,7 +9,7 @@
     "start:dev": "SET NODE_ENV=development&& nodemon src/main.js --exec babel-node",
     "prod": "babel src --out-dir dist && npm run copy-mailTemplate",
     "copy-mailTemplate": "ncp ./src/utils/mail/templates/ ./dist/utils/mail/templates/",
-    "start:prod": "npm run prod&& npm run start",
+    "start:prod": "npm run prod",
     "postinstall": "npm run start:prod"
   },
   "keywords": [],
