@@ -12,10 +12,7 @@ app.set("port", config.APP.PORT);
 // Middlewares
 if (process.env.NODE_ENV == "development") {
   app.use(morgan("dev"));
-} else {
-  app.use(morgan("short"));
 }
-
 app.use(cors());
 
 app.use(bodyParser.json({ limit: "50mb" }));

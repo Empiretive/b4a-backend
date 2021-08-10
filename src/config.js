@@ -16,6 +16,10 @@ const config = {
     PORT: process.env.PORT || 5050,
     API_VERSION: process.env.API_VERSION || 1,
     LINK: process.env.APP_LINK || "http://localhost:4200",
+    NAME: process.env.APP_NAME || "",
+    EMAIL: process.env.APP_EMAIL || "",
+    PHONE: process.env.APP_PHONE || "",
+
   },
   DB: {
     URL: process.env.DB_URL,

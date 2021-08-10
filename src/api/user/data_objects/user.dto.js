@@ -18,7 +18,7 @@ export const userDto = ({ dni, name, lastName, email, role, photo }) => {
   }
 
   if (error.length > 0) {
-    return { error };
+    throw new Error("Problema en los datos del usuario");
   } else {
     return { dni, name, lastName, email, role, photo };
   }

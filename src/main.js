@@ -22,10 +22,7 @@ io.on("connection", (socket) => {
     console.log(message);
   });
 });
-app.get("/socket", (req, res) => {
-  io.emit("send", "Enviandoooo");
-  res.send("enviando socket");
-});
+
 server.listen(app.get("port"), () => {
   console.log(chalk.blueBright(`Server listening on port ${app.get("port")}`));
 });

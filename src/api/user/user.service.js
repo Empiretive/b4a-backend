@@ -46,7 +46,7 @@ export const registerUser = async (req, res) => {
       user.password = await encrypt.encryptPassword(password); //Encrypt Password
       user.status = UserState.active;
       user.email = user.email.toLowerCase();
-      user.phone = phone;
+      user.phone = phone; //Falta validar el telefono
       const userSaved = await UserDao.registerUser(user); //Saved user on BD
       const token = null;
 

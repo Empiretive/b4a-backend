@@ -20,6 +20,16 @@ const createTransport = () => {
   return transport;
 };
 
+const getContext = (context) => {
+  return {
+    appName: config.APP.NAME,
+    appLink: config.APP.LINK,
+    appEmail: config.APP.EMAIL,
+    appPhone: config.APP.PHONE,
+    context,
+  };
+};
+
 const generateTemplate = (bodyTemplatePath, context) => {
   const mainTemplatePath = fs.readFileSync(
     path.join(__dirname, "/templates", "/main.hbs"),
@@ -47,12 +57,14 @@ const sendMail = async (toEmail, subject, template) => {
 
 export const sendMailRegister = (toEmail, { name, lastName, password }) => {
   const registerTemplate = path.join(__dirname, "/templates", "/register.hbs");
-  const template = generateTemplate(registerTemplate, {
-    name,
-    lastName,
-    password,
-    link: config.APP.LINK,
-  });
+  const template = generateTemplate(
+    registerTemplate,
+    getContext({
+      name,
+      lastName,
+      password,
+    })
+  );
   fs.writeFileSync("index.html", template);
   const subject = `Hola ${name}, Bienvenido a la comunidad Empiretive`;
   sendMail(toEmail, subject, template);
